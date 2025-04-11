@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Elementary Cellular Automaton Simulator</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #fff;
+        color: #333;
+      }
+      
+      header {
+        width: 90%;
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 10px;
+        text-align: center;
+        border-bottom: 2px solid #333;
+      }
+
+      p {
+        font-size: 12px; 
+        text-align: justify;
+      }
+
+      a:link {
+        text-decoration: none;
+      }
+      
+      #app-container {
+        display: flex;
+        margin: auto;
+        justify-content: center;
+        max-width: 1400px;
+      }
+      
+      #sidebar {
+        width: 260px;
+        margin: 0 40px;
+      }
+      
+      #sidebar h2 {
+        text-align: center;
+      }
+
+      #sidebar h3 {
+        text-align: center;
+        font-size: 18px;
+      }
+      
+      #sidebar button {
+        width: 100px;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #cccccc;
+        border-radius: 7.5px;
+        background-color: #ffffff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+      
+      #sidebar button:hover {
+        background-color: #f6f6f6;
+      }
+      
+      #sidebar select,
+      #sidebar input {
+        width: 110px;
+        font-size: 10px;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #cccccc;
+        border-radius: 7.5px;
+        background-color: #ffffff;
+        font-weight: bold;
+      }
+      
+      #controls-panel {
+        margin: auto;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      
+      .input-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      
+      .input-row label {
+        font-weight: bold;
+      }
+      
+      .input-row input,
+      .input-row select {
+        width: 100px;
+        height: 30px;
+        box-sizing: border-box;
+      }
+      
+      #buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      #ruleset-panel {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        padding: 10px 0;
+      }
+      
+      .rule-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .top-row,
+      .bot-row {
+        display: flex;
+      }
+      
+      .bot-row {
+        justify-content: center;
+      }
+      
+      .cell {
+        width: 15px;
+        height: 15px;
+        border: 1px solid #000;
+      }
+      
+      .cell.alive {
+        background-color: #333;
+      }
+      
+      .cell.dead {
+        background-color: #fafafa;
+      }
+      
+      .cell.toggle {
+        border-top: none;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .cell.left {
+        border-right: none;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+      
+      .cell.right {
+        border-left: none;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+      }
+      
+      #rule-number {
+        border-bottom: 2px solid #333;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+      }
+      
+      #rule-number label {
+        font-size: 12px;
+        font-weight: normal;
+      }
+
+      /* Canvas area */
+      #display-area {
+        padding: 20px;
+        background-color: #f6f6f6;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+      }
+      
+      #automaton-canvas {
+        width: 1000px;
+        height: 1000px;
+        background-color: #fafafa;
+        border: 2px solid #e0e0e0;
+      }
+
+      @media (max-width: 600px) {
+        /* Stack sidebar and display area vertically */
+        #app-container {
+          flex-direction: column;
+          align-items: center;
+          padding: 0px;
+        }
+        #sidebar {
+          width: 80%;
+        }
+        #display-area {
+          width: 80%;
+          overflow: scroll;
+          width: 100vw;
+          margin: 0;
+          padding: 0;
+        }
+        /* Optionally, reduce font sizes */
+        p,
+        .input-row label {
+          font-size: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Elementary Cellular Automaton Simulator</h1>
+    </header>
+    <div id="app-container">
+      <nav id="sidebar">
+        <h2>Rules</h2>
+        <div id="controls-panel">
+          <label style="font-weight: bold">Create a ruleset:</label>
+          <div id="ruleset-panel">
+            <!-- Tile 111 -->
+            <div class="rule-tile" data-index="0">
+              <div class="top-row">
+                <div class="cell left alive"></div>
+                <div class="cell center alive"></div>
+                <div class="cell right alive"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle dead"></div>
+              </div>
+            </div>
+            <!-- Tile 110 -->
+            <div class="rule-tile" data-index="1">
+              <div class="top-row">
+                <div class="cell left alive"></div>
+                <div class="cell center alive"></div>
+                <div class="cell right dead"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle dead"></div>
+              </div>
+            </div>
+            <!-- Tile 101 -->
+            <div class="rule-tile" data-index="2">
+              <div class="top-row">
+                <div class="cell left alive"></div>
+                <div class="cell center dead"></div>
+                <div class="cell right alive"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle dead"></div>
+              </div>
+            </div>
+            <!-- Tile 100 -->
+            <div class="rule-tile" data-index="3">
+              <div class="top-row">
+                <div class="cell left alive"></div>
+                <div class="cell center dead"></div>
+                <div class="cell right dead"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle alive"></div>
+              </div>
+            </div>
+            <!-- Tile 011 -->
+            <div class="rule-tile" data-index="4">
+              <div class="top-row">
+                <div class="cell left dead"></div>
+                <div class="cell center alive"></div>
+                <div class="cell right alive"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle alive"></div>
+              </div>
+            </div>
+            <!-- Tile 010 -->
+            <div class="rule-tile" data-index="5">
+              <div class="top-row">
+                <div class="cell left dead"></div>
+                <div class="cell center alive"></div>
+                <div class="cell right dead"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle alive"></div>
+              </div>
+            </div>
+            <!-- Tile 001 -->
+            <div class="rule-tile" data-index="6">
+              <div class="top-row">
+                <div class="cell left dead"></div>
+                <div class="cell center dead"></div>
+                <div class="cell right alive"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle alive"></div>
+              </div>
+            </div>
+            <!-- Tile 000 -->
+            <div class="rule-tile" data-index="7">
+              <div class="top-row">
+                <div class="cell left dead"></div>
+                <div class="cell center dead"></div>
+                <div class="cell right dead"></div>
+              </div>
+              <div class="bot-row">
+                <div class="cell toggle dead"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Inputs -->
+          <div class="input-row" id="rule-number">
+            <label>Alternatively, type one in:</label>
+            <input id="rule-number-input" type="number" min="0" max="255" value="30" placeholder="0 to 255" autocomplete="off">
+          </div>
+          <div class="input-row">
+            <label for="presets">Or select a preset:</label>
+            <select id="presets" autocomplete="off">
+              <option value="30" selected>Rule 30</option>
+              <option value="75">Rule 75</option>
+              <option value="90">Rule 90</option>
+              <option value="110">Rule 110</option>
+              <option value="184">Rule 184</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <label for="starting-condition" style="font-weight: 500">Starting condition:</label>
+            <select id="starting-condition">
+              <option value="singleCell" selected>Single Cell</option>
+              <option value="random">Random</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <label for="grid-size" style="font-weight: 500">Grid size:</label>
+            <!-- min set to 0 so the steps are 100, 200, 300, etc. -->
+            <input
+              type="number"
+              id="grid-size"
+              placeholder="1 to 1000"
+              min="0"
+              max="1000"
+              value="250"
+              step="100"
+              autocomplete="off"
+            >
+          </div>
+        </div>
+        <div id="buttons">
+          <button id="generate-button">Generate</button>
+        </div>
+        <div>
+          <h3>What's going on?</h3>
+          <p>
+            A small <a href="https://mathworld.wolfram.com/ElementaryCellularAutomaton.html">elementary cellular 
+            automaton</a> simulator I built with Rust and WebAssembly. I wanted an introductory project to Rust, and this seemed a
+            bit more fun and useful than a CLI to-do app. Using Rust makes it quite a bit faster than what you'd otherwise get.
+          </p>
+        </div>
+        <div>
+          <h3>How to use?</h3>
+          <p>
+            If you're already familiar with elementary cellular automaton, you can jump right in: select or create a rule, 
+            pick a starting condition, set the grid size, and press Generate to see how the cells evolve. <b>Scroll down
+            to see the generation if you're on mobile</b>. Otherwise, 
+            <a href="https://mathworld.wolfram.com/ElementaryCellularAutomaton.html">Wolfram Mathworld</a> provides a nice 
+            introduction.
+          </p>
+          <h3>Acknowledgements</h3>
+          <p>
+            <ul style="font-size: 12px; text-align: justify">
+              <li>
+                <a href="https://devinacker.github.io/celldemo/">Devin Acker's sim</a> 
+                (inspiration),
+              </li>
+              <li>
+                <a href="https://rustwasm.github.io/docs/book/">Rust and WebAssembly book</a>.
+              </li>
+            </ul>
+          </p>
+        </div>
+      </nav>
+      <div id="display-area">
+        <canvas id="automaton-canvas"></canvas>
+      </div>
+    </div>
+    <script src="./bootstrap.js"></script>
+  </body>
+</html>
