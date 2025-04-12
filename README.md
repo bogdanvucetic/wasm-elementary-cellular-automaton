@@ -1,4 +1,4 @@
-# Project Title
+# WebAssembly Elementary Cellular Automaton
 
 A small elementary cellular automaton simulator I built with Rust and WebAssembly. I wanted an introductory project to Rust, and this seemed a
 bit more fun and useful than a CLI to-do app. Using Rust makes it quite a 
