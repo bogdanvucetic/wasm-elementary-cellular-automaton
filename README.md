@@ -6,7 +6,7 @@ bit faster than what you'd otherwise get.
 
 ## Website Demo
 
-bogdanvucetic.github.io
+[bogdanvucetic.github.io](bogdanvucetic.github.io)
 
 ## License
 
